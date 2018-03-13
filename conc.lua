@@ -1,4 +1,5 @@
 #! /usr/bin/env lua
+dofile("lex.lua")
 
 local function smi(b, ind)
 	return setmetatable(b, {__index=ind})
@@ -20,6 +21,7 @@ local stack = {
 		
 	push = function(st, it)
 		st[#st + 1] = it
+		return st
 	end,
 	pop = function(st)
 		local it = st[#st]
@@ -28,7 +30,7 @@ local stack = {
 	end,
 }
 
-local builtin = {
+builtin = {
 	nover = function(st)
 		offset = st:pop()
 		st:push(st:top(offset))
@@ -91,28 +93,71 @@ local builtin = {
 		return st
 	end,
 
+	wrap = function(st)
+		local no = st:pop()
+		local t = {}
+		for i=1,no do
+			t[#t + 1] = st:pop()
+		end
+		st:push(t)
+		return st
+	end,
+
+	call = function(st)
+		if type(st:top()) ~= "function" then
+			return st
+		end
+
+		st:pop()(st)
+		return st
+	end,
+
+	apply = function(st)
+		for _, it in ipairs(st:pop()) do
+			st:push(it):call()
+		end
+		return st
+	end,
+
 	print = function(st)
 		print(st:pop())
 		return st
 	end,
-
 	exit = function(st)
 		exit(st:top())
 	end,
 }
 smi(stack, builtin)
 
-local st = smi({}, stack)
-
-local file = io.open(arg[1], "r")
-local p = file:read("*all"):gmatch("%S+")
-file:close()
-for com in p do
-	local act = builtin[com]
-	if act then
-		act(st)
-	else
-		st:push(tonumber(com) or com)
+local function build_q(lex)
+	local st = smi({}, stack)
+	for token in lex:iter() do
+		if token == "[" then
+			token = build_q(lex)
+		elseif token == "]" then
+			return st
+		end
+		st:push(token)
 	end
+
+	return st
 end
 
+local st = smi({}, stack)
+local file = io.open(arg[1], "r")
+local q = build_q(lex:new(file:read("*all")))
+file:close()
+
+st:push(q):apply()
+
+	--[[
+for com in p do
+
+	print("")
+	print("----stack----")
+	for i, v in ipairs(st) do
+		print(v)
+	end
+	print("--")
+end
+	--]]
