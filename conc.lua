@@ -30,6 +30,20 @@ local stack = {
 	end,
 }
 
+local function build_q(lex)
+	local st = smi({}, stack)
+	for token in lex:iter() do
+		if token == "[" then
+			token = build_q(lex)
+		elseif token == "]" then
+			return st
+		end
+		st:push(token)
+	end
+
+	return st
+end
+
 builtin = {
 	nover = function(st)
 		offset = st:pop()
@@ -61,20 +75,12 @@ builtin = {
 		st:ins(2, st:rem(1))
 		return st
 	end,
-	nip = function(st)
-		st:rem(1)
-		return st
-	end,
 	rot = function(st)
 		st:push(st:rem(2))
 		return st
 	end,
 	nrot = function(st)
 		st:ins(2, st:pop())
-		return st
-	end,
-	ddup = function(st)
-		st:over():over()
 		return st
 	end,
 
@@ -92,6 +98,7 @@ builtin = {
 		st:push(t)
 		return st
 	end,
+
 	wrap = function(st)
 		local no = st:pop()
 		local t = {}
@@ -101,6 +108,7 @@ builtin = {
 		st:push(t)
 		return st
 	end,
+
 	call = function(st)
 		if type(st:top()) ~= "function" then
 			return st
@@ -109,6 +117,7 @@ builtin = {
 		st:pop()(st)
 		return st
 	end,
+
 	pop = function(st)
 		st:push(st:top():pop())
 		return st
@@ -155,6 +164,15 @@ builtin = {
 		io.write(st:pop())
 		return st
 	end,
+
+	dofile = function(st)
+		local file = io.open(st:pop(), "r")
+		st:push(build_q(lex:new(file:read("*all"))))
+		file:close()
+		st:apply()
+		return st
+	end,
+		
 	exit = function(st)
 		exit(st:top())
 	end,
@@ -163,26 +181,9 @@ builtin = {
 smi(stack, builtin)
 user = smi({}, builtin)
 
-local function build_q(lex)
-	local st = smi({}, stack)
-	for token in lex:iter() do
-		if token == "[" then
-			token = build_q(lex)
-		elseif token == "]" then
-			return st
-		end
-		st:push(token)
-	end
-
-	return st
-end
-
 local st = smi({}, stack)
-local file = io.open(arg[1], "r")
-local q = build_q(lex:new(file:read("*all")))
-file:close()
+st:push("std"):dofile():push(arg[1]):dofile()
 
-st:push(q):apply()
 
 	--[[
 for com in p do

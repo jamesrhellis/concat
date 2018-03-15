@@ -8,7 +8,7 @@ lex = {
 		return string
 	end,
 	string = function(string)
-		return string:sub(1, -1)
+		return string:sub(1, -1):gsub([[\n]], "\n"):gsub([[\t]], "\t")
 	end,
 	number = tonumber,
 	-- Default file starting point

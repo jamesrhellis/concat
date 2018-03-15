@@ -1,5 +1,3 @@
-[ 1 2 3 4 5 ] 0 over [ add ] map dup print swap " Sum of;" print [ " " print print ] map " = " print print
-
-[ add ] "+" def
+[ 1 2 3 4 5 ] 0 over [ add ] map dup print swap " Sum of;" print [ " " print print ] map " = " print println
 
 1 2 + print
