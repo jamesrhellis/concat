@@ -1,6 +1,6 @@
 lex = {
 	patterns = {
-		string = "^\"([^\n]*)\"",
+		string = "^\"([^\n]-)\"",
 		number = "^(%d+%.?%d*)",
 		s_symbol = "^([%[%]])",
 	},
@@ -8,7 +8,7 @@ lex = {
 		return string
 	end,
 	string = function(string)
-		return string:sub(2, -2)
+		return string:sub(1, -1)
 	end,
 	number = tonumber,
 	-- Default file starting point
@@ -29,8 +29,11 @@ function lex:lex(string, from_int)
 	end
 
 	local start, e_match, match_str = string:find("^(%S+)", from_int)
+	if not match_str then
+		return nil
+	end
 
-	return (e_match or string:len()) + 1, builtin[match_str]
+	return (e_match or string:len()) + 1, function(st) return user[match_str](st) end
 end
 
 function lex:next()

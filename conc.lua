@@ -92,7 +92,6 @@ builtin = {
 		st:push(t)
 		return st
 	end,
-
 	wrap = function(st)
 		local no = st:pop()
 		local t = {}
@@ -102,7 +101,6 @@ builtin = {
 		st:push(t)
 		return st
 	end,
-
 	call = function(st)
 		if type(st:top()) ~= "function" then
 			return st
@@ -111,23 +109,59 @@ builtin = {
 		st:pop()(st)
 		return st
 	end,
+	pop = function(st)
+		st:push(st:top():pop())
+		return st
+	end,
+	push = function(st)
+		st:push(st:top():pop())
+		return st
+	end,
+
+	map = function(st)
+		local f = st:pop()
+		for _, it in ipairs(st:pop()) do
+			st:push(it):push(f):apply()
+		end
+		return st
+	end,
 
 	apply = function(st)
 		for _, it in ipairs(st:pop()) do
 			st:push(it):call()
+			--[[
+			print("")
+			print("----stack----")
+			for i, v in ipairs(st) do
+				print(v)
+			end
+			print("--")
+			--]]
+		end
+
+		return st
+	end,
+
+	def = function(st)
+		local name = st:pop()
+		local body = st:pop()
+		user[name] = function(st)
+			st:push(body):apply()
 		end
 		return st
 	end,
 
 	print = function(st)
-		print(st:pop())
+		io.write(st:pop())
 		return st
 	end,
 	exit = function(st)
 		exit(st:top())
 	end,
 }
+
 smi(stack, builtin)
+user = smi({}, builtin)
 
 local function build_q(lex)
 	local st = smi({}, stack)
