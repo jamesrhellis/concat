@@ -92,7 +92,14 @@ builtin = {
 		return st
 	end,
 	sub = function(st)
-		local t = st:top() - st:top(1)
+		local t = st:top(1) - st:top()
+		st:pop()
+		st:pop()
+		st:push(t)
+		return st
+	end,
+	gt = function(st)
+		local t = st:top(1) > st:top()
 		st:pop()
 		st:pop()
 		st:push(t)
@@ -117,6 +124,13 @@ builtin = {
 		st:pop()(st)
 		return st
 	end,
+	dip = function(st)
+		local hid = st:rem(1)
+		st:apply()
+		st:push(hid)
+
+		return st
+	end,
 
 	pop = function(st)
 		st:push(st:top():pop())
@@ -132,6 +146,18 @@ builtin = {
 		for _, it in ipairs(st:pop()) do
 			st:push(it):push(f):apply()
 		end
+		return st
+	end,
+	[ "if" ] = function(st)
+		local f = st:pop()
+		local t = st:pop()
+		if st:pop() == true then
+			st:push(t)
+		else
+			st:push(f)
+		end
+		st:apply()
+	
 		return st
 	end,
 
