@@ -4,4 +4,8 @@
 
 [ "This is awesome!" println ] 5 times
 
+[ 1 1 rot [ ddup + rot drop ] swap 2 - times nip ] "fib" def
+
+[ 1 2 3 4 ] [ dup print "; " print fib println ] map
+
 1 2 + print

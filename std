@@ -1,0 +1,15 @@
+[ dofile ] "in" def
+
+[ print "\n" print ] "println" def
+[ add ] "+" def
+[ sub ] "-" def
+[ gt ] ">" def
+
+[ over over ] "ddup" def
+[ swap drop ] "nip" def
+
+[ swap [ dip ] dip ] "ddip" def
+[ swap [ ddip ] dip ] "tdip" def
+
+[ rot [ drop ] [ nip ] if ] "?" def
+[ dup 0 > [ over ddip 1 - times ] [ drop drop ] if ] "times" def
