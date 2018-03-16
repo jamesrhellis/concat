@@ -4,6 +4,7 @@
 [ add ] "+" def
 [ sub ] "-" def
 [ gt ] ">" def
+[ [ ] ] "[]" def
 
 [ over over ] "ddup" def
 [ swap drop ] "nip" def

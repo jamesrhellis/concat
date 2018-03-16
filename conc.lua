@@ -164,16 +164,19 @@ builtin = {
 	apply = function(st)
 		for _, it in ipairs(st:pop()) do
 			st:push(it):call()
-			--[[
-			print("")
-			print("----stack----")
-			for i, v in ipairs(st) do
-				print(v)
-			end
-			print("--")
-			--]]
 		end
 
+		return st
+	end,
+
+	stat = function(st)
+		print("")
+		print("----stack----")
+		for i, v in ipairs(st) do
+			print(v)
+		end
+		print("--")
+		
 		return st
 	end,
 
